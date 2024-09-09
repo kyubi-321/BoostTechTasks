@@ -27,7 +27,7 @@ $experience = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Me - <?php echo $name; ?></title>
-    <link rel="stylesheet" href="about.css"> 
+    <link rel="stylesheet" href="index.css"> 
 </head>
 <body>
 
