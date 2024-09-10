@@ -1,5 +1,5 @@
 <?php
-$name = "Ankit";
+$name = "Ankit Badhani";
 $bio = "I am a software developer with expertise in web development. I enjoy building scalable web applications using Next.js, React, and have discussions abot DevOps tools with devops team in backend in previous internship.I am always willing to open to good opprotunities for me because my aim is to always grow in life";
 $skills = [
     "Frontend Development" => "Exeperienced in React, Next.js, and modern JavaScript frameworks.",
