@@ -15,10 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("sssssss", $company_name, $company_address, $company_website, $company_email_id, $company_mobile, $headquarters_details, $company_status);
 
     if ($stmt->execute()) {
-        echo "<p class='success'>New record created successfully by Ankit Badhani</p>";
+        $success_message = "New record created successfully by Ankit Badhani";
     } else {
-        echo "<p class='error'>Error: " . $stmt->error . "</p>";
+        $error_message = "Error: " . $stmt->error;
     }
+
 
     $stmt->close();
 }
@@ -28,16 +29,23 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Insert Company Data</title>
     <link rel="stylesheet" href="style.css">
-    
+
 </head>
+
 <body>
     <div class="container">
         <h1>Insert Company Data</h1>
+        <?php if ($success_message): ?>
+            <p class="success" id="success-message"><?php echo $success_message; ?></p>
+        <?php elseif ($error_message): ?>
+            <p class="error"><?php echo $error_message; ?></p>
+        <?php endif; ?>
         <form action="index.php" method="post">
             <label for="company_name">Company Name:</label>
             <input type="text" id="company_name" name="company_name" required>
@@ -66,5 +74,16 @@ $conn->close();
             <input type="submit" value="Submit">
         </form>
     </div>
+    <script>
+        window.onload = function() {
+            var successMessage = document.getElementById('success-message');
+            if (successMessage) {
+                setTimeout(function() {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }
+        };
+    </script>
 </body>
+
 </html>
