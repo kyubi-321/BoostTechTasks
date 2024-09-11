@@ -70,7 +70,7 @@ input[type="submit"]:hover {
     text-align: center;
 }
 
-/* Responsive Styles */
+/* Responsive Styles added here*/
 @media (max-width: 768px) {
     .container {
         width: 95%;

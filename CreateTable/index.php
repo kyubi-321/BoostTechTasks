@@ -5,6 +5,33 @@ include 'db_connect.php';
 $success_message = "";
 $error_message = "";
 
+// Checking if the company table exists or not and then creating it
+$table_check_query = "SHOW TABLES LIKE 'company'";
+$result = $conn->query($table_check_query);
+
+if ($result->num_rows == 0) {
+    // If the table does not exist, I am creating it here.
+    $create_table_query = "
+    CREATE TABLE company (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        company_name VARCHAR(255) NOT NULL,
+        company_address TEXT NOT NULL,
+        company_website VARCHAR(255) NOT NULL,
+        company_email_id VARCHAR(255) NOT NULL,
+        company_mobile VARCHAR(15) NOT NULL,
+        headquarters_details TEXT NOT NULL,
+        company_status ENUM('active', 'inactive') NOT NULL,
+        resume_path VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+
+    if ($conn->query($create_table_query) === TRUE) {
+        $success_message = "Table 'company' created successfully.";
+    } else {
+        $error_message = "Error creating table: " . $conn->error;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $company_name = $_POST['company_name'];
     $company_address = $_POST['company_address'];
@@ -14,25 +41,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $headquarters_details = $_POST['headquarters_details'];
     $company_status = $_POST['company_status'];
 
-    // Handle resume upload
+    // Handling the resume upload
     $resume = $_FILES['resume'];
 
     if ($resume['error'] == 0) {
-        // Define the target directory and file path
+        // Defining the target directory and file path
         $target_dir = "uploads/";
         if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0777, true); // Create directory if it doesn't exist
+            mkdir($target_dir, 0777, true);
         }
         $target_file = $target_dir . basename($resume["name"]);
         $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
-        // Validate file type (allow only certain formats, e.g., pdf, docx)
+        // Allowing only pdf, doc, and docx formats right now
         $allowed_types = ['pdf', 'docx', 'doc'];
         if (in_array($file_type, $allowed_types)) {
-            // Move the uploaded file to the target directory
+            // Moving the uploaded file to the target directory
             if (move_uploaded_file($resume["tmp_name"], $target_file)) {
-                // Insert into the database
-                $stmt = $conn->prepare("INSERT INTO company (company_name, company_address, company_website, company_email_id, company_mobile, headquarters_details, company_status, resume_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO company (company_name, company_address, company_website, company_email_id, company_mobile, headquarters_details, company_status, resume_path, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
                 $stmt->bind_param("ssssssss", $company_name, $company_address, $company_website, $company_email_id, $company_mobile, $headquarters_details, $company_status, $target_file);
 
                 if ($stmt->execute()) {
@@ -53,8 +79,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->close();
 }
 
+// Fetching all uploaded files from the company SQL dtaabase
+$fetch_files_query = "SELECT id, company_name, resume_path FROM company";
+$files_result = $conn->query($fetch_files_query);
+
 $conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -74,7 +106,7 @@ $conn->close();
         <?php elseif ($error_message): ?>
             <p class="error"><?php echo $error_message; ?></p>
         <?php endif; ?>
-        
+
         <form action="index.php" method="post" enctype="multipart/form-data">
             <label for="company_name">Company Name:</label>
             <input type="text" id="company_name" name="company_name" required>
@@ -105,6 +137,19 @@ $conn->close();
 
             <input type="submit" value="Submit">
         </form>
+        <h2>Uploaded Files</h2>
+        <ul>
+            <?php if ($files_result->num_rows > 0): ?>
+                <?php while ($file = $files_result->fetch_assoc()): ?>
+                    <li>
+                        <?php echo htmlspecialchars($file['company_name']); ?> -
+                        <a href="<?php echo $file['resume_path']; ?>" download>Download Resume</a>
+                    </li>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <li>No files uploaded yet.</li>
+            <?php endif; ?>
+        </ul>
     </div>
     <script>
         window.onload = function() {
